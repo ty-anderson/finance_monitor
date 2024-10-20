@@ -62,7 +62,7 @@ def etl():
         new_records = result.fetchall()
         conn.commit()
 
-    if len(new_records) == 0:
+    if len(new_records) > 0:
         rates, target_rates = get_reporting_data(years_back=2)
         rates = rates.sort_values(by=['date'])
         target_rates = target_rates.sort_values(by=['date'])
