@@ -16,4 +16,15 @@ fed_funds_eff_rate_tbl = Table('federal_funds_effective_rate',
                                       server_onupdate=func.now())
                                )
 
+fed_funds_target_tbl = Table('federal_funds_target_rate',
+                             meta,
+                             Column('id', Integer, primary_key=True),
+                             Column('date', Date),
+                             Column('value_upper', Double),
+                             Column('value_lower', Double),
+                             Column('created_date', DateTime,
+                                    server_default=func.now(),
+                                    server_onupdate=func.now())
+                             )
+
 meta.create_all(engine)
