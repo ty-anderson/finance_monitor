@@ -2,11 +2,9 @@
 Get Federal Funds Target Rate
 ------------------------------
 
-
 """
 import datetime
 import pandas as pd
-import matplotlib.pyplot as plt
 from sqlalchemy import select, func
 from sqlalchemy.dialects.postgresql import insert
 from db.model import engine, fed_funds_target_tbl
@@ -19,14 +17,19 @@ def etl():
         latest_date = conn.execute(
             select(func.coalesce(func.max(fed_funds_target_tbl.c.date), '2020-01-01'))).fetchone()
 
-    next_30 = min(latest_date[0] + datetime.timedelta(days=30), start_time.date())
-    print(f'Pulling from {latest_date[0]} to {next_30}')
+    latest_date = latest_date[0] + datetime.timedelta(days=1)
+    if latest_date > start_time.date():
+        print('no new data')
+        return
+
+    next_30 = min(latest_date + datetime.timedelta(days=30), start_time.date() + datetime.timedelta(days=1))
+    print(f'Pulling from {latest_date} to {next_30}')
     data_upper = fred.request_data(series_id=fred.FEDERAL_FUNDS_TARGET_RATE_UPPER,
-                                   start_date=latest_date[0],
+                                   start_date=latest_date,
                                    end_date=next_30)
     dfu = pd.DataFrame(data_upper.get('observations'))
     data_lower = fred.request_data(series_id=fred.FEDERAL_FUNDS_TARGET_RATE_LOWER,
-                                   start_date=latest_date[0],
+                                   start_date=latest_date,
                                    end_date=next_30)
     dfl = pd.DataFrame(data_lower.get('observations'))
 
@@ -48,5 +51,4 @@ def etl():
 
 
 if __name__ == '__main__':
-    while True:
-        etl()
+    etl()
