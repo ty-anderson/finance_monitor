@@ -76,6 +76,8 @@ def etl():
                                file=('plot.png', img_buffer, 'image/png'))
         img_buffer.close()
 
+    webhook_finance_monkey(f'Federal funds target and effective date ran at {start_time}')
+
 
 if __name__ == '__main__':
     target_etl()
