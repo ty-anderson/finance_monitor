@@ -45,11 +45,11 @@ def etl():
                              start_date=latest_date[0],
                              end_date=start_time.strftime('%Y-%m-%d'))
     df = pd.DataFrame(data.get('observations'))
-    df = df[['date', 'value']]
     if df.empty:
         print('Nothing to report')
         return
 
+    df = df[['date', 'value']]
     df['date'] = pd.to_datetime(df['date'])
     df['id'] = df['date'].dt.strftime('%Y%m%d')
     df['date'] = df['date'].dt.date
