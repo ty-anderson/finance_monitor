@@ -5,10 +5,9 @@ Get Federal Funds Effective Rate
 Download the API data for Federal Funds Rate and Federal Funds Target Rate.
 If there's any new data, load to database and then report it via Discord Webhook
 """
-import load_env
 import datetime
 import pandas as pd
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from db.model import engine, fed_funds_eff_rate_tbl, fed_funds_target_tbl
 from alert.discord import webhook_finance_monkey
@@ -16,6 +15,8 @@ from jobs.funcs import format_table_with_pipes, plot_df_data
 from jobs.fed_funds_target_rate import etl as target_etl
 import requests
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+load_dotenv()
 
 
 def get_reporting_data(years_back: int):
