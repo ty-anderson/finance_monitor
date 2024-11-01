@@ -6,8 +6,6 @@ FRED Bank API
 """
 import os
 import requests
-from dotenv import load_dotenv
-load_dotenv()
 
 FEDERAL_FUNDS_EFFECTIVE_RATE='FEDFUNDS'
 FEDERAL_FUNDS_TARGET_RATE_UPPER='DFEDTARU'
