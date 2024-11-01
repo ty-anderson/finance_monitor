@@ -28,6 +28,4 @@ def webhook_finance_monkey(msg: str,
 
 
 if __name__ == '__main__':
-    webhook_finance_monkey(msg='This was sent',
-                           file=open(r'path/to/file', 'rb')
-                           )
+    webhook_finance_monkey(msg='This was sent')

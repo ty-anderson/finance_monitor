@@ -5,7 +5,6 @@ Get Federal Funds Effective Rate
 Download the API data for Federal Funds Rate and Federal Funds Target Rate.
 If there's any new data, load to database and then report it via Discord Webhook
 """
-import load_env
 import datetime
 import pandas as pd
 from sqlalchemy import select, func
