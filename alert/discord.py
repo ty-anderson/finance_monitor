@@ -2,7 +2,6 @@ import os
 import json
 from typing import IO, Optional
 import requests
-import load_env
 
 
 def webhook_finance_monkey(msg: str,
