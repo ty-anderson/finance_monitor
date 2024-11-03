@@ -73,3 +73,4 @@ def etl():
 if __name__ == '__main__':
     target_etl()
     etl()
+    webhook_finance_monkey('Federal Funds Rate Done')
