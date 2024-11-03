@@ -10,6 +10,8 @@ from sqlalchemy.dialects.postgresql import insert
 from db.model import engine, fed_funds_target_tbl
 from api import fred
 from alert.discord import webhook_finance_monkey
+from dotenv import load_dotenv
+load_dotenv()
 
 
 def etl():
