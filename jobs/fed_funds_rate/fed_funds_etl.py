@@ -46,7 +46,7 @@ def fed_funds_target_rate_etl():
         latest_date = conn.execute(
             select(func.coalesce(func.max(fed_funds_target_tbl.c.date), '2020-01-01'))).fetchone()
 
-    latest_date = latest_date[0]# + datetime.timedelta(days=1)
+    latest_date = latest_date[0] + datetime.timedelta(days=1)
     if latest_date > start_time.date():
         print('no new data')
         return
@@ -94,5 +94,4 @@ def main():
 
 
 if __name__ == '__main__':
-    fed_funds_effective_rate_etl()
-    fed_funds_target_rate_etl()
+    main()
