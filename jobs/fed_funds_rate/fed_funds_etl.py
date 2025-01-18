@@ -1,26 +1,52 @@
 """
-Get Federal Funds Target Rate
-------------------------------
+Get Federal Funds Effective Rate ETL
+------------------------------------
 
+Download the API data for Federal Funds Rate and Federal Funds Target Rate.
+If there's any new data, load to database and then report it via Discord Webhook
 """
 import datetime
 import pandas as pd
-from sqlalchemy import select, func
+import requests
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
-from db.model import engine, fed_funds_target_tbl
-from api import fred
-from alert.discord import webhook_finance_monkey
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from api import fred
+from decorators import try_alert
+from alert.discord import send_alert
+from db.model import engine, fed_funds_eff_rate_tbl, fed_funds_target_tbl
+
 load_dotenv()
 
 
-def etl():
+@try_alert
+def fed_funds_effective_rate_etl():
+    url = 'https://www.federalreserve.gov/feeds/Data/H15_H15_RIFSPFF_N.B.XML'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "xml")
+
+    data = {
+        'date': soup.item.statistics.otherStatistic.observationPeriod.string,
+        'value': soup.item.statistics.otherStatistic.value.string,
+        'id': str(soup.item.statistics.otherStatistic.observationPeriod.string).replace('-', ''),
+    }
+
+    with engine.connect() as conn:
+        insert_stmt = insert(fed_funds_eff_rate_tbl).values(data)
+        insert_stmt = insert_stmt.on_conflict_do_nothing()
+        conn.execute(insert_stmt)
+        conn.commit()
+
+
+@try_alert
+def fed_funds_target_rate_etl():
     start_time = datetime.datetime.now()
     with engine.connect() as conn:
         latest_date = conn.execute(
             select(func.coalesce(func.max(fed_funds_target_tbl.c.date), '2020-01-01'))).fetchone()
 
-    latest_date = latest_date[0] + datetime.timedelta(days=1)
+    latest_date = latest_date[0]# + datetime.timedelta(days=1)
     if latest_date > start_time.date():
         print('no new data')
         return
@@ -33,7 +59,8 @@ def etl():
     dfu = pd.DataFrame(data_upper.get('observations'))
     if dfu.empty:
         print(data_upper)
-        webhook_finance_monkey(str(data_upper))
+        send_alert(str(data_upper),
+                   channel='Finance Monkey')
         return
 
     data_lower = fred.request_data(series_id=fred.FEDERAL_FUNDS_TARGET_RATE_LOWER,
@@ -42,7 +69,8 @@ def etl():
     dfl = pd.DataFrame(data_lower.get('observations'))
     if dfl.empty:
         print(data_lower)
-        webhook_finance_monkey(str(data_lower))
+        send_alert(str(data_lower),
+                   channel='Finance Monkey')
         return
 
     dfu = dfu[['date', 'value']].rename(columns={'value': 'value_upper'})
@@ -59,8 +87,12 @@ def etl():
         conn.execute(insert_stmt)
         conn.commit()
 
-    print('Done')
+
+def main():
+    fed_funds_effective_rate_etl()
+    fed_funds_target_rate_etl()
 
 
 if __name__ == '__main__':
-    etl()
+    fed_funds_effective_rate_etl()
+    fed_funds_target_rate_etl()
