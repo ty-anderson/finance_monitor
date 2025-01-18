@@ -1,4 +1,6 @@
-
+"""
+Report the fed funds data
+"""
 import pandas as pd
 from db.model import engine
 from alert.discord import send_alert
@@ -35,3 +37,7 @@ def report_fed_funds_rate():
                    f'Federal funds rate:\n\n\n'
                    + rates_df.to_string(index=False, justify='match-parent'),
                channel='Finance Monkey')
+
+
+if __name__ == '__main__':
+    report_fed_funds_rate()

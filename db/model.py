@@ -1,6 +1,6 @@
 from sqlalchemy import (Table, String, Text, Integer, Double,
                         create_engine, MetaData, Column, Date,
-                        func, DateTime)
+                        func, DateTime, Boolean)
 
 
 db_str = f'postgresql+psycopg2://postgres:postgres@homeserver:5432/postgres'
@@ -13,6 +13,7 @@ fed_funds_eff_rate_tbl = Table('federal_funds_effective_rate',
                                Column('id', Integer, primary_key=True),
                                Column('date', Date),
                                Column('value', Double),
+                               Column('carry_forward', Boolean, nullable=False),
                                Column('created_date', DateTime,
                                       server_default=func.now(),
                                       server_onupdate=func.now())

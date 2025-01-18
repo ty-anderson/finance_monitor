@@ -22,6 +22,8 @@ load_dotenv()
 
 @try_alert
 def fed_funds_effective_rate_etl():
+    print('Checking for todays effective rate')
+    today = datetime.date.today()
     url = 'https://www.federalreserve.gov/feeds/Data/H15_H15_RIFSPFF_N.B.XML'
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "xml")
@@ -30,12 +32,24 @@ def fed_funds_effective_rate_etl():
         'date': soup.item.statistics.otherStatistic.observationPeriod.string,
         'value': soup.item.statistics.otherStatistic.value.string,
         'id': str(soup.item.statistics.otherStatistic.observationPeriod.string).replace('-', ''),
+        'carry_forward': False
     }
 
     with engine.connect() as conn:
+        today_reported_date = datetime.datetime.strptime(data['date'], '%Y-%m-%d').date()
+
+        if today_reported_date < today:
+            # if today doesn't have a reported number, carry the previous number forward
+            most_recent_val = select(func.max(fed_funds_eff_rate_tbl.c.date))
+            most_recent_val = conn.execute(most_recent_val).fetchone()[0]
+            data['date'] = datetime.datetime.strftime(most_recent_val + datetime.timedelta(days=1), '%Y-%m-%d')
+            data['id'] = int(data['id']) + 1
+            data['carry_forward'] = True
+
         insert_stmt = insert(fed_funds_eff_rate_tbl).values(data)
         insert_stmt = insert_stmt.on_conflict_do_nothing()
         conn.execute(insert_stmt)
+
         conn.commit()
 
 
