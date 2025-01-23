@@ -38,7 +38,7 @@ def fed_funds_effective_rate_etl():
     with engine.connect() as conn:
         today_reported_date = datetime.datetime.strptime(data['date'], '%Y-%m-%d').date()
 
-        if today_reported_date < today:
+        if today_reported_date < today or data['value'] == 'ND':
             # if today doesn't have a reported number, carry the previous number forward
             most_recent_val = select(func.max(fed_funds_eff_rate_tbl.c.date))
             most_recent_val = conn.execute(most_recent_val).fetchone()[0]
